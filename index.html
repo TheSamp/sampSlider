@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,IE=9,IE=8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="The Samp - Sampo Asikainen">
+    <title>sampSlider</title>
+    <link type="text/css" rel="stylesheet" media="all" href="style.css" />
+    <style type="text/css">
+    #slida-container{
+			max-width:1024px;
+			max-height:576px;
+		}
+    </style>
+  </head>
+  <body>
+  <div id="slida-container">	
+    <div id="slida-1" class="samp-slider samp-slider-mask">    
+      <ul class="samp-container-horizontal">
+        <li class="samp-container"><img src="slides/1.jpg"></li>
+        <li class="samp-container"><img src="slides/2.jpg"></li>
+        <li class="samp-container"><img src="slides/3.jpg"></li>
+        <li class="samp-container"><img src="slides/4.jpg"></li>
+        <li class="samp-container"><img src="slides/5.jpg"></li>
+        <li class="samp-container"><img src="slides/6.jpg"></li>
+      </ul>
+    </div>
+  </div>
+  <script type="text/javascript" src="http://www.thesamp.com/html/js/jquery-1.10.2.min.js"></script>    
+	<script type="text/javascript" src="sampslider.js"></script>
+	<script type="text/javascript">
+  
+    var slida = jQuery('#slida-1').sampSlider({
+      aspectratio:1.8,
+      autosize: true,
+      autoplay: 4000,
+      slidespeed: 500,
+      dragonbar: true,
+      startslide: 1
+    });
+  
+  </script>
+</body>
+</html>
