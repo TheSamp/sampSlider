@@ -1,18 +1,18 @@
 	(function(jQuery){	
 	
 		var settings = {};
-		var sWidth = 0, sHeight = 0, sRatio = 0;//dimension				
+		var sWidth = 0, sHeight = 0, sRatio = 0, maxOffset = 0;//dimension
 		var curSlide = 1, toSlide = 1, totalSlides = 1;
 		var handleClick = null;//custom click function if needed		
 		var	playTimer;//autoplay timer
-		var timeoutId = null, moveSpeed = 0, movedir = 1;//scrolling vars
-		
+		var timeoutId = null, moveSpeed = 0, movedir = 1, isEnd = true;//scrolling vars
+        var icondir = 'next';
 		
 		_sampSlider = function(elem){		
 							
 			_self = this;
 			totalSlides = jQuery(elem+'.samp-slider .samp-container-horizontal').children().length;
-			var isTouchSupported = ('ontouchstart' in window);						
+			var isTouchSupported = ('ontouchstart' in window);
 			var startEvent = isTouchSupported ? 'touchstart' : 'mousedown';
 			var moveEvent = isTouchSupported ? 'touchmove' : 'mousemove';
 			var endEvent = isTouchSupported ? 'touchend' : 'mouseup';
@@ -102,12 +102,12 @@
 
 
 			function _dragonHandler(e){
-				e = (e || event);//console.log(e);				
+				e = (e || event);
 				var oSet = 0;				
 				var tgt = e.currentTarget;
 				var tgtW = jQuery(tgt).width();
 				var ctr = tgtW/2;
-				var icondir = 'next';					
+
 				rect = tgt.getBoundingClientRect();//console.log(rect.top, rect.right, rect.bottom, rect.left);
 
 				var dX = e.clientX-rect.left;							
@@ -119,9 +119,20 @@
 	
 				var minOset = jQuery(tgt.children[0]).width()/2;
 				var maxOset = jQuery(tgt).width()-(jQuery(tgt.children[0]).width()/2);
-				
-					if(dX <= minOset) dX = minOset;
-					if(dX >= maxOset) dX = maxOset;
+
+				isEnd = false;
+
+                    if((Math.abs(getCurrentScrollX()) == Math.abs(maxOffset) && movedir < 0) || (Math.abs(getCurrentScrollX()) == 0 && movedir > 0)){
+                        isEnd = true;
+                    }
+
+					if(dX <= minOset){
+                        dX = minOset;
+                    }
+
+					if(dX >= maxOset){
+                        dX = maxOset;
+                    }
 					
 				tgt.children[0].style.left = dX+'px';								
 				oSet = Math.abs(ctr-dX);
@@ -130,34 +141,35 @@
 						icondir = 'prev';
 						movedir = 1;
 					}else{
-						movedir = -1;										 
-					}
-					
-					//if half way and higher than 20th of width
-					if(oSet <= tgtW/4 && oSet > tgtW/20){
-						
-						jQuery(tgt.children[0]).attr('class', 'samp-slider-dragon-ctrl');
-						jQuery(tgt.children[0]).addClass('dragon-slide-'+icondir);
-						
-					}else if(oSet > tgtW/4){
-						moveSpeed = 10;
-							jQuery(tgt.children[0]).attr('class', 'samp-slider-dragon-ctrl');
-							jQuery(tgt.children[0]).addClass('dragon-move-'+icondir);
-						
+						movedir = -1;
+                        icondir = 'next';
 					}
 
-					if(oSet >= ((tgtW/2)*0.75)){
-						moveSpeed = 50;
-							jQuery(tgt.children[0]).attr('class', 'samp-slider-dragon-ctrl');
-							jQuery(tgt.children[0]).addClass('dragon-frw-'+icondir);
-						
-					}			
-							
-					jQuery(tgt.children[0]).addClass('samp-grab');	
+					//if half way and higher than 20th of width
+					if(oSet <= tgtW/4 && oSet > tgtW/20){
+                            jQuery(tgt.children[0]).attr('class', 'samp-slider-dragon-ctrl dragon-grab-slide-'+icondir);
+					}else if(oSet > tgtW/4 ){
+
+                            if(isEnd){
+                                    jQuery(tgt.children[0]).attr('class', 'samp-slider-dragon-ctrl dragon-grab-slide-'+icondir);//duplicate in scrollX function for "live" update.
+                            }else{
+                                    if(oSet > tgtW/4){
+                                        moveSpeed = 10;
+                                            jQuery(tgt.children[0]).attr('class', 'samp-slider-dragon-ctrl dragon-grab-frw-'+icondir);
+                                    }
+
+                                    if(oSet >= ((tgtW/2)*0.75)){
+                                        moveSpeed = 50;
+                                            jQuery(tgt.children[0]).attr('class', 'samp-slider-dragon-ctrl dragon-grab-fastfrw-'+icondir);
+                                    }
+                            }
+                    }
+
+					jQuery(tgt.children[0]).addClass('samp-slider-grab');
 					
 					if(moveSpeed > 0){									
-							if(timeoutId == null)	timeoutId = window.setTimeout(scrollX, 50);
-					}else	timeoutId = clearTimeout(timeoutId);
+							if(timeoutId == null) timeoutId = window.setTimeout(scrollX, 50);
+					}else timeoutId = clearTimeout(timeoutId);
 																
 					if(dX < ctr) {
 						tgt.children[1].style.width = ((tgtW/2)-dX)+'px';
@@ -166,31 +178,34 @@
 						tgt.children[1].style.left = (tgtW/2)+'px';
 						tgt.children[1].style.width = (dX-(tgtW/2))+'px';
 					}
-
 			}
 						
-			
+			function getCurrentScrollX(){
+                return movedir*parseInt(jQuery(elem+'.samp-slider .samp-container-horizontal').css('margin-left').replace('px',''))
+            }
 			
 			function scrollX(){
 
-				var curX = movedir*parseInt(jQuery(elem+'.samp-slider .samp-container-horizontal').css('margin-left').replace('px',''));					
+				var curX = getCurrentScrollX();
 				var newX = ((curX+moveSpeed)*movedir);
-				var maxOffset = -((sWidth*totalSlides)-sWidth);
+				isEnd = true;
 
 					if(newX >= 0){
 						 newX = 0;
-						 jQuery(elem).find('.samp-slider-dragon-ctrl').hide();
 					}else if(newX <= maxOffset){
 						 newX = maxOffset;
-						 jQuery(elem).find('.samp-slider-dragon-ctrl').hide();
-					}
+					}else{
+                        isEnd = false;
+                    }
 					
-				toSlide = Math.abs(Math.floor((curX+(sWidth/2))/sWidth))+1;	
-	
+				toSlide = Math.abs(Math.floor((curX+(sWidth/2))/sWidth))+1;
 					jQuery(elem+'.samp-slider .samp-container-horizontal').css({'margin-left':+newX+'px'});
 
-				timeoutId = window.setTimeout(scrollX, 50);
-			
+                    if(isEnd){
+                            jQuery(elem).find('.samp-slider-dragon-ctrl').attr('class', 'samp-slider-dragon-ctrl dragon-grab-slide-'+icondir);
+                    }
+
+                    timeoutId = window.setTimeout(scrollX, 50);
 			}
 	
 			
@@ -366,6 +381,7 @@
 			if(totsWidth > 0){						
 					jQuery(elem+'.samp-slider .samp-container-horizontal .samp-container').css({'width': sWidth + 'px','height':sHeight + 'px'});
 					jQuery(elem+'.samp-slider .samp-container-horizontal').css({'width':totsWidth+50 + 'px','height':sHeight,'margin-left':-(sWidth*(curSlide-1))+'px'});
+                maxOffset = -((sWidth*totalSlides)-sWidth);
 			}						
 	
 	}
@@ -386,7 +402,7 @@
 				startslide: 1,// 1 and up
 				gototop: false, //boolean, if automatically scroll to top of slider
 				afterinit: function(){
-					console.log('Vroom.');
+					//console.log('Vroom.');
 				}
 			}, options);
 				
