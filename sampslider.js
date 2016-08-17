@@ -274,6 +274,7 @@
 							//jQuery(elem+'.samp-slider .samp-container-horizontal .samp-container:nth-child('+curSlide+')').animate({'opacity':'1'}, settings.slidespeed/4);									
 							
 							if(settings.gototop) jQuery('html, body').stop().animate({scrollTop: jQuery(mTarget).offset().top}, settings.slidespeed/2);
+							if(typeof settings.afterslide == 'function') settings.afterslide();
 					});
 			}
 		
@@ -295,7 +296,8 @@
 					if(toSlide < 1 && !settings.loop) toSlide = totalSlides;	
 					else if(toSlide > totalSlides && !settings.loop) toSlide = 1;
 						
-				curSlide = toSlide;	
+				curSlide = toSlide;
+					if(typeof settings.beforeslide == 'function') settings.beforeslide();
 				_animateThis(elem, settings.slidespeed);
 			}			
 							
@@ -378,6 +380,8 @@
 				slidespeed: 500,
 				startslide: 1,// 1 and up
 				gototop: false, //boolean, if automatically scroll to top of slider
+				beforeslide: null,//if defined as a function this will be called before image switch
+				afterslide: null,//if defined as a function this will be called after image switch
 				afterinit: function(){
 					//console.log('Vroom.');
 				}

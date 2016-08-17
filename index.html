@@ -37,7 +37,13 @@
       autoplay: 4000,
       slidespeed: 500,
       dragonbar: true,
-      startslide: 1
+      startslide: 1,
+      beforeslide: function(){
+        console.log('before');
+      },
+      afterslide: function(){
+        console.log('after');
+      }
     });
   
   </script>
